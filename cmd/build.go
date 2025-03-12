@@ -4,12 +4,10 @@
 package cmd
 
 import (
-	"fmt"
-	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 
+	"github.com/purpleKarrot/cx/x"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -42,19 +40,9 @@ func RunBuild(cmd *cobra.Command, args []string) {
 		cm.Args = append(cm.Args, "--config", buildType)
 	}
 
-	cm.Stdout = os.Stdout
-	cm.Stderr = os.Stderr
-
-	fmt.Printf("\nExecuting command: %s %s\n\n", cm.Path, strings.Join(cm.Args[1:], " "))
-	if err := cm.Run(); err != nil {
-		fmt.Printf("Error executing command: %v\n", err)
-		return
-	}
+	x.Run(cm)
 }
 
 func ninjaAllTarget() string {
-	if projectSubdir != "." {
-		return projectSubdir + "/all"
-	}
-	return "all"
+	return x.If(projectSubdir != ".", projectSubdir+"/all", "all")
 }

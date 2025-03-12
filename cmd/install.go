@@ -4,12 +4,10 @@
 package cmd
 
 import (
-	"fmt"
-	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 
+	"github.com/purpleKarrot/cx/x"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -38,9 +36,6 @@ func RunInstall(cmd *cobra.Command, args []string) {
 
 	cm := exec.Command("cmake", "--install", filepath.Join(rootBinaryDir, projectSubdir))
 
-	cm.Stdout = os.Stdout
-	cm.Stderr = os.Stderr
-
 	if config := cmd.Flag("config").Value.String(); config != "" {
 		cm.Args = append(cm.Args, "--config", config)
 	}
@@ -57,9 +52,5 @@ func RunInstall(cmd *cobra.Command, args []string) {
 		cm.Args = append(cm.Args, "--verbose")
 	}
 
-	fmt.Printf("\nExecuting command: %s %s\n\n", cm.Path, strings.Join(cm.Args[1:], " "))
-	if err := cm.Run(); err != nil {
-		fmt.Printf("Error executing command: %v\n", err)
-		return
-	}
+	x.Run(cm)
 }

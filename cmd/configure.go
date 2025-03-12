@@ -4,12 +4,11 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 
+	"github.com/purpleKarrot/cx/x"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -63,15 +62,7 @@ func MakeConfigureCmd(cmake string) *exec.Cmd {
 }
 
 func RunConfigure(cmd *cobra.Command, args []string) {
-	cm := MakeConfigureCmd("cmake")
-
-	cm.Stdout = os.Stdout
-	cm.Stderr = os.Stderr
-
-	fmt.Printf("\nExecuting command: %s %s\n\n", cm.Path, strings.Join(cm.Args[1:], " "))
-	if err := cm.Run(); err != nil {
-		fmt.Printf("Error executing command: %v\n", err)
-	}
+	x.Run(MakeConfigureCmd("cmake"))
 }
 
 func RequireConfigure(cmd *cobra.Command, args []string) {

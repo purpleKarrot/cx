@@ -4,10 +4,6 @@
 package cmd
 
 import (
-	"fmt"
-	"os"
-	"strings"
-
 	"github.com/purpleKarrot/cx/x"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -16,24 +12,14 @@ import (
 var editCmd = &cobra.Command{
 	Use:   "edit",
 	Short: "Open a cache editor",
-	Run:   RunEdit,
+	Run: func(cmd *cobra.Command, args []string) {
+		cmake := x.If(viper.GetBool("edit.gui"), "cmake-gui", "ccmake")
+		x.Run(MakeConfigureCmd(cmake))
+	},
 }
 
 func init() {
 	rootCmd.AddCommand(editCmd)
 	editCmd.Flags().Bool("gui", false, "Use Qt GUI")
 	viper.BindPFlag("edit.gui", editCmd.Flags().Lookup("gui"))
-}
-
-func RunEdit(cmd *cobra.Command, args []string) {
-	cm := MakeConfigureCmd(x.If(viper.GetBool("edit.gui"), "cmake-gui", "ccmake"))
-
-	cm.Stdin = os.Stdin
-	cm.Stdout = os.Stdout
-	cm.Stderr = os.Stderr
-
-	fmt.Printf("\nExecuting command: %s %s\n\n", cm.Path, strings.Join(cm.Args[1:], " "))
-	if err := cm.Run(); err != nil {
-		fmt.Printf("Error executing command: %v\n", err)
-	}
 }
