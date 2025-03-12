@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -55,6 +56,7 @@ func RunConfigure(cmd *cobra.Command, args []string) {
 	cm.Stdout = os.Stdout
 	cm.Stderr = os.Stderr
 
+	fmt.Printf("\nExecuting command: %s %s\n\n", cm.Path, strings.Join(cm.Args[1:], " "))
 	if err := cm.Run(); err != nil {
 		fmt.Printf("Error executing command: %v\n", err)
 		return

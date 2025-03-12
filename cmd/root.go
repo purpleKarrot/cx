@@ -4,6 +4,7 @@
 package cmd
 
 import (
+	"crypto/md5"
 	"fmt"
 	"log"
 	"os"
@@ -46,7 +47,8 @@ func initProjectRoot() {
 		log.Fatalf("Failed to find project root: %v", err)
 	}
 
-	rootBinaryDir = filepath.Join(rootSourceDir, "build")
+	hash := fmt.Sprintf("%x", md5.Sum([]byte(rootSourceDir)))
+	rootBinaryDir = filepath.Join(xdg.CacheHome, "cx", hash)
 
 	projectSubdir, err = filepath.Rel(rootSourceDir, startDir)
 	if err != nil {
