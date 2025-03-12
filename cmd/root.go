@@ -57,7 +57,6 @@ func initProjectRoot() {
 }
 
 func initConfig() {
-	viper.AddConfigPath(filepath.Join(rootBinaryDir, ".cx"))
 	viper.AddConfigPath(filepath.Join(xdg.ConfigHome, "cx"))
 	viper.SetConfigName("config")
 

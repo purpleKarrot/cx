@@ -32,26 +32,38 @@ func init() {
 	viper.BindPFlag("platform", configureCmd.Flags().Lookup("platform"))
 }
 
-func RunConfigure(cmd *cobra.Command, args []string) {
-	cm := exec.Command("cmake", "-S"+rootSourceDir, "-B"+rootBinaryDir)
+func MakeConfigureCmd(cmake string) *exec.Cmd {
+	if _, err := os.Stat(filepath.Join(rootBinaryDir, "CMakeCache.txt")); !os.IsNotExist(err) {
+		return exec.Command(cmake, rootBinaryDir)
+	}
+
+	cmd := exec.Command(cmake, "-S"+rootSourceDir, "-B"+rootBinaryDir)
 
 	generator := viper.GetString("generator")
 	if generator != "" {
-		cm.Args = append(cm.Args, "-G"+generator)
+		cmd.Args = append(cmd.Args, "-G"+generator)
 	}
 
 	if toolset := viper.GetString("toolset"); toolset != "" {
-		cm.Args = append(cm.Args, "-T"+toolset)
+		cmd.Args = append(cmd.Args, "-T"+toolset)
 	}
 
 	if platform := viper.GetString("platform"); platform != "" {
-		cm.Args = append(cm.Args, "-A"+platform)
+		cmd.Args = append(cmd.Args, "-A"+platform)
 	}
 
-	// TODO: Don't specify build type for multi-config generators
-	if buildType := viper.GetString("build_type"); buildType != "" {
-		cm.Args = append(cm.Args, "-DCMAKE_BUILD_TYPE="+buildType)
+	// TODO: use `--config` once it is supported by CMake.
+	// See: https://gitlab.kitware.com/cmake/cmake/-/merge_requests/10387
+	// The advantage is that it will be ignored for multi-config generators.
+	if config := viper.GetString("config"); config != "" {
+		cmd.Args = append(cmd.Args, "-DCMAKE_BUILD_TYPE="+config)
 	}
+
+	return cmd
+}
+
+func RunConfigure(cmd *cobra.Command, args []string) {
+	cm := MakeConfigureCmd("cmake")
 
 	cm.Stdout = os.Stdout
 	cm.Stderr = os.Stderr
@@ -59,11 +71,7 @@ func RunConfigure(cmd *cobra.Command, args []string) {
 	fmt.Printf("\nExecuting command: %s %s\n\n", cm.Path, strings.Join(cm.Args[1:], " "))
 	if err := cm.Run(); err != nil {
 		fmt.Printf("Error executing command: %v\n", err)
-		return
 	}
-
-	os.Mkdir(filepath.Join(rootBinaryDir, ".cx"), 0755)
-	viper.WriteConfigAs(filepath.Join(rootBinaryDir, ".cx", "config.json"))
 }
 
 func RequireConfigure(cmd *cobra.Command, args []string) {
