@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime"
 
 	"github.com/adrg/xdg"
 	"github.com/spf13/cobra"
@@ -41,6 +42,9 @@ func init() {
 
 	flags.String("config", "", "Specify the build configuration")
 	viper.BindPFlag("config", flags.Lookup("config"))
+
+	flags.IntP("parallel", "j", runtime.NumCPU(), "Specify the number of parallel jobs")
+	viper.BindPFlag("parallel", flags.Lookup("parallel"))
 }
 
 func initProjectRoot() {

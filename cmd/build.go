@@ -42,5 +42,7 @@ func RunBuild(cmd *cobra.Command, args []string) {
 		cm.Args = append(cm.Args, "--config", config)
 	}
 
+	cm.Args = append(cm.Args, "--parallel", viper.GetString("parallel"))
+
 	x.Run(cm, verbose)
 }

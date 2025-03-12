@@ -25,12 +25,14 @@ func init() {
 func RunTest(cmd *cobra.Command, args []string) {
 	RunBuild(cmd, args)
 
-	cm := exec.Command("ctest", "--test-dir", filepath.Join(rootBinaryDir, projectSubdir), "--parallel")
+	cm := exec.Command("ctest", "--test-dir", filepath.Join(rootBinaryDir, projectSubdir))
 
 	// TODO: Don't specify build type for single config generators
 	if config := viper.GetString("config"); config != "" {
 		cm.Args = append(cm.Args, "-C", config)
 	}
+
+	cm.Args = append(cm.Args, "--parallel", viper.GetString("parallel"))
 
 	x.Run(cm, verbose)
 }
