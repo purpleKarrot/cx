@@ -6,6 +6,7 @@ package cmd
 import (
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/purpleKarrot/cx/x"
 	"github.com/spf13/cobra"
@@ -27,7 +28,7 @@ func RunBuild(cmd *cobra.Command, args []string) {
 
 	var cm *exec.Cmd
 	generator := viper.GetString("generator")
-	if generator == "Ninja" {
+	if strings.Contains(generator, "Ninja") {
 		all := x.If(projectSubdir != ".", projectSubdir+"/all", "all")
 		cm = exec.Command("cmake", "--build", rootBinaryDir, "--target", all)
 	} else if generator == "Xcode" {
@@ -37,8 +38,8 @@ func RunBuild(cmd *cobra.Command, args []string) {
 	}
 
 	// TODO: Don't specify build type for single config generators
-	if buildType := viper.GetString("build_type"); buildType != "" {
-		cm.Args = append(cm.Args, "--config", buildType)
+	if config := viper.GetString("config"); config != "" {
+		cm.Args = append(cm.Args, "--config", config)
 	}
 
 	x.Run(cm, verbose)

@@ -28,8 +28,8 @@ func RunTest(cmd *cobra.Command, args []string) {
 	cm := exec.Command("ctest", "--test-dir", filepath.Join(rootBinaryDir, projectSubdir), "--parallel")
 
 	// TODO: Don't specify build type for single config generators
-	if buildType := viper.GetString("build_type"); buildType != "" {
-		cm.Args = append(cm.Args, "-C", buildType)
+	if config := viper.GetString("config"); config != "" {
+		cm.Args = append(cm.Args, "-C", config)
 	}
 
 	x.Run(cm, verbose)

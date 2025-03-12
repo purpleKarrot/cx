@@ -16,7 +16,7 @@ import (
 )
 
 var (
-	verbose bool
+	verbose       bool
 	rootSourceDir string
 	rootBinaryDir string
 	projectSubdir string
@@ -35,7 +35,12 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(initProjectRoot, initConfig)
-	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "enable verbose output")
+
+	flags := rootCmd.PersistentFlags()
+	flags.BoolVarP(&verbose, "verbose", "v", false, "enable verbose output")
+
+	flags.String("config", "", "Specify the build configuration")
+	viper.BindPFlag("config", flags.Lookup("config"))
 }
 
 func initProjectRoot() {

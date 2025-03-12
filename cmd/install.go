@@ -21,7 +21,6 @@ var installCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(installCmd)
 
-	installCmd.Flags().String("config", "", "For multi-configuration tools, choose <cfg>")
 	installCmd.Flags().String("component", "", "Component-based install. Only install <comp>")
 
 	installCmd.Flags().Bool("strip", false, "Performing install/strip")
@@ -36,7 +35,7 @@ func RunInstall(cmd *cobra.Command, args []string) {
 
 	cm := exec.Command("cmake", "--install", filepath.Join(rootBinaryDir, projectSubdir))
 
-	if config := cmd.Flag("config").Value.String(); config != "" {
+	if config := viper.GetString("config"); config != "" {
 		cm.Args = append(cm.Args, "--config", config)
 	}
 
