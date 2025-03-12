@@ -16,6 +16,7 @@ import (
 )
 
 var (
+	verbose bool
 	rootSourceDir string
 	rootBinaryDir string
 	projectSubdir string
@@ -34,6 +35,7 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(initProjectRoot, initConfig)
+	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "enable verbose output")
 }
 
 func initProjectRoot() {

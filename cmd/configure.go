@@ -62,7 +62,7 @@ func MakeConfigureCmd(cmake string) *exec.Cmd {
 }
 
 func RunConfigure(cmd *cobra.Command, args []string) {
-	x.Run(MakeConfigureCmd("cmake"))
+	x.Run(MakeConfigureCmd("cmake"), verbose)
 }
 
 func RequireConfigure(cmd *cobra.Command, args []string) {

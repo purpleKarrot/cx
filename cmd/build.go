@@ -28,7 +28,8 @@ func RunBuild(cmd *cobra.Command, args []string) {
 	var cm *exec.Cmd
 	generator := viper.GetString("generator")
 	if generator == "Ninja" {
-		cm = exec.Command("cmake", "--build", rootBinaryDir, "--target", ninjaAllTarget())
+		all := x.If(projectSubdir != ".", projectSubdir+"/all", "all")
+		cm = exec.Command("cmake", "--build", rootBinaryDir, "--target", all)
 	} else if generator == "Xcode" {
 		cm = exec.Command("cmake", "--build", rootBinaryDir, "--target", "ALL_BUILD")
 	} else {
@@ -40,9 +41,5 @@ func RunBuild(cmd *cobra.Command, args []string) {
 		cm.Args = append(cm.Args, "--config", buildType)
 	}
 
-	x.Run(cm)
-}
-
-func ninjaAllTarget() string {
-	return x.If(projectSubdir != ".", projectSubdir+"/all", "all")
+	x.Run(cm, verbose)
 }

@@ -52,5 +52,5 @@ func RunInstall(cmd *cobra.Command, args []string) {
 		cm.Args = append(cm.Args, "--verbose")
 	}
 
-	x.Run(cm)
+	x.Run(cm, verbose)
 }

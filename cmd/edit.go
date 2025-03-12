@@ -14,7 +14,7 @@ var editCmd = &cobra.Command{
 	Short: "Open a cache editor",
 	Run: func(cmd *cobra.Command, args []string) {
 		cmake := x.If(viper.GetBool("edit.gui"), "cmake-gui", "ccmake")
-		x.Run(MakeConfigureCmd(cmake))
+		x.Run(MakeConfigureCmd(cmake), verbose)
 	},
 }
 

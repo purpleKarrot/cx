@@ -32,5 +32,5 @@ func RunTest(cmd *cobra.Command, args []string) {
 		cm.Args = append(cm.Args, "-C", buildType)
 	}
 
-	x.Run(cm)
+	x.Run(cm, verbose)
 }

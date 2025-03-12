@@ -15,7 +15,7 @@ var openCmd = &cobra.Command{
 	Short: "Open the generated project in the associated application",
 	Run: func(cmd *cobra.Command, args []string) {
 		RequireConfigure(cmd, args)
-		x.Run(exec.Command("cmake", "--open", rootBinaryDir))
+		x.Run(exec.Command("cmake", "--open", rootBinaryDir), verbose)
 	},
 }
 

@@ -21,6 +21,10 @@ func init() {
 }
 
 func RunClean(cmd *cobra.Command, args []string) {
+	if verbose {
+		fmt.Printf("Cleaning build directory %s\n", rootBinaryDir)
+	}
+
 	if err := os.RemoveAll(rootBinaryDir); err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to delete directory: %v\n", err)
 		os.Exit(1)
