@@ -40,7 +40,7 @@ func init() {
 	flags := rootCmd.PersistentFlags()
 	flags.BoolVarP(&verbose, "verbose", "v", false, "enable verbose output")
 
-	flags.String("config", "", "Specify the build configuration")
+	flags.String("config", "Debug", "Specify the build configuration")
 	viper.BindPFlag("config", flags.Lookup("config"))
 
 	flags.IntP("parallel", "j", runtime.NumCPU(), "Specify the number of parallel jobs")

@@ -4,6 +4,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -16,7 +17,7 @@ import (
 var configureCmd = &cobra.Command{
 	Use:   "configure",
 	Short: "Generate a build system",
-	Run:   RunConfigure,
+	RunE:  RunConfigure,
 }
 
 func init() {
@@ -31,24 +32,33 @@ func init() {
 	viper.BindPFlag("platform", configureCmd.Flags().Lookup("platform"))
 }
 
-func MakeConfigureCmd(cmake string) *exec.Cmd {
+func MakeConfigureCmd(cmake string) (*exec.Cmd, error) {
 	if _, err := os.Stat(filepath.Join(rootBinaryDir, "CMakeCache.txt")); !os.IsNotExist(err) {
-		return exec.Command(cmake, rootBinaryDir)
+		return exec.Command(cmake, rootBinaryDir), nil
 	}
 
-	cmd := exec.Command(cmake, "-S"+rootSourceDir, "-B"+rootBinaryDir)
+	api := filepath.Join(rootBinaryDir, ".cmake", "api", "v1", "query", "client-cx")
+	if err := os.MkdirAll(api, 0755); err != nil {
+		return nil, fmt.Errorf("Failed to create directory %s: %v", api, err)
+	}
+
+	file, _ := os.Create(filepath.Join(api, "codemodel-v2"))
+	file.Close()
+
+	cmd := exec.Command(cmake, rootSourceDir)
+	cmd.Dir = rootBinaryDir
 
 	generator := viper.GetString("generator")
 	if generator != "" {
-		cmd.Args = append(cmd.Args, "-G"+generator)
+		cmd.Args = append(cmd.Args, "-G", generator)
 	}
 
 	if toolset := viper.GetString("toolset"); toolset != "" {
-		cmd.Args = append(cmd.Args, "-T"+toolset)
+		cmd.Args = append(cmd.Args, "-T", toolset)
 	}
 
 	if platform := viper.GetString("platform"); platform != "" {
-		cmd.Args = append(cmd.Args, "-A"+platform)
+		cmd.Args = append(cmd.Args, "-A", platform)
 	}
 
 	// TODO: use `--config` once it is supported by CMake.
@@ -58,15 +68,20 @@ func MakeConfigureCmd(cmake string) *exec.Cmd {
 		cmd.Args = append(cmd.Args, "-DCMAKE_BUILD_TYPE="+config)
 	}
 
-	return cmd
+	return cmd, nil
 }
 
-func RunConfigure(cmd *cobra.Command, args []string) {
-	x.Run(MakeConfigureCmd("cmake"), verbose)
-}
-
-func RequireConfigure(cmd *cobra.Command, args []string) {
-	if _, err := os.Stat(filepath.Join(rootBinaryDir, "CMakeCache.txt")); os.IsNotExist(err) {
-		RunConfigure(cmd, args)
+func RunConfigure(cmd *cobra.Command, args []string) error {
+	c, err := MakeConfigureCmd("cmake")
+	if err != nil {
+		return err
 	}
+	return x.Run(c, verbose)
+}
+
+func RequireConfigure(cmd *cobra.Command, args []string) error {
+	if _, err := os.Stat(filepath.Join(rootBinaryDir, "CMakeCache.txt")); os.IsNotExist(err) {
+		return RunConfigure(cmd, args)
+	}
+	return nil
 }

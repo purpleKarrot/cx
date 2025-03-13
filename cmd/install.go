@@ -15,7 +15,7 @@ import (
 var installCmd = &cobra.Command{
 	Use:   "install",
 	Short: "A brief description of your command",
-	Run:   RunInstall,
+	RunE:  RunInstall,
 }
 
 func init() {
@@ -30,8 +30,10 @@ func init() {
 	viper.BindPFlag("install.verbose", installCmd.Flags().Lookup("verbose"))
 }
 
-func RunInstall(cmd *cobra.Command, args []string) {
-	RunBuild(cmd, args)
+func RunInstall(cmd *cobra.Command, args []string) error {
+	if err := RunBuild(cmd, args); err != nil {
+		return err
+	}
 
 	cm := exec.Command("cmake", "--install", filepath.Join(rootBinaryDir, projectSubdir))
 
@@ -53,5 +55,5 @@ func RunInstall(cmd *cobra.Command, args []string) {
 
 	cm.Args = append(cm.Args, "--parallel", viper.GetString("parallel"))
 
-	x.Run(cm, verbose)
+	return x.Run(cm, verbose)
 }

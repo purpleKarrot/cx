@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/purpleKarrot/cx/m"
 	"github.com/purpleKarrot/cx/x"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -16,15 +17,22 @@ import (
 var buildCmd = &cobra.Command{
 	Use:   "build",
 	Short: "Build all targets in the current directory",
-	Run:   RunBuild,
+	RunE:  RunBuild,
 }
 
 func init() {
 	rootCmd.AddCommand(buildCmd)
 }
 
-func RunBuild(cmd *cobra.Command, args []string) {
-	RequireConfigure(cmd, args)
+func RunBuild(cmd *cobra.Command, args []string) error {
+	if err := RequireConfigure(cmd, args); err != nil {
+		return err
+	}
+
+	api, err := m.LoadIndex(rootBinaryDir)
+	if err != nil {
+		return err
+	}
 
 	var cm *exec.Cmd
 	generator := viper.GetString("generator")
@@ -37,12 +45,11 @@ func RunBuild(cmd *cobra.Command, args []string) {
 		cm = exec.Command("cmake", "--build", filepath.Join(rootBinaryDir, projectSubdir))
 	}
 
-	// TODO: Don't specify build type for single config generators
-	if config := viper.GetString("config"); config != "" {
-		cm.Args = append(cm.Args, "--config", config)
+	if api.CMake.Generator.MultiConfig {
+		cm.Args = append(cm.Args, "--config", viper.GetString("config"))
 	}
 
 	cm.Args = append(cm.Args, "--parallel", viper.GetString("parallel"))
 
-	x.Run(cm, verbose)
+	return x.Run(cm, verbose)
 }

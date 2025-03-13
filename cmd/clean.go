@@ -13,20 +13,17 @@ import (
 var cleanCmd = &cobra.Command{
 	Use:   "clean",
 	Short: "Delete the existing build directory",
-	Run:   RunClean,
+	RunE:  RunClean,
 }
 
 func init() {
 	rootCmd.AddCommand(cleanCmd)
 }
 
-func RunClean(cmd *cobra.Command, args []string) {
+func RunClean(cmd *cobra.Command, args []string) error {
 	if verbose {
 		fmt.Printf("Cleaning build directory %s\n", rootBinaryDir)
 	}
 
-	if err := os.RemoveAll(rootBinaryDir); err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to delete directory: %v\n", err)
-		os.Exit(1)
-	}
+	return os.RemoveAll(rootBinaryDir)
 }

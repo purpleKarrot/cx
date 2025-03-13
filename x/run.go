@@ -9,7 +9,7 @@ import (
 	"os/exec"
 )
 
-func Run(cmd *exec.Cmd, verbose bool) {
+func Run(cmd *exec.Cmd, verbose bool) error {
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -18,7 +18,5 @@ func Run(cmd *exec.Cmd, verbose bool) {
 		fmt.Printf("\nExecuting command: %v\n\n", cmd)
 	}
 
-	if err := cmd.Run(); err != nil {
-		fmt.Printf("Error executing command: %v\n", err)
-	}
+	return cmd.Run()
 }

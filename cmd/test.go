@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
+	"github.com/purpleKarrot/cx/m"
 	"github.com/purpleKarrot/cx/x"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -15,24 +16,30 @@ import (
 var testCmd = &cobra.Command{
 	Use:   "test",
 	Short: "A brief description of your command",
-	Run:   RunTest,
+	RunE:  RunTest,
 }
 
 func init() {
 	rootCmd.AddCommand(testCmd)
 }
 
-func RunTest(cmd *cobra.Command, args []string) {
-	RunBuild(cmd, args)
+func RunTest(cmd *cobra.Command, args []string) error {
+	api, err := m.LoadIndex(rootBinaryDir)
+	if err != nil {
+		return err
+	}
+
+	if err := RunBuild(cmd, args); err != nil {
+		return err
+	}
 
 	cm := exec.Command("ctest", "--test-dir", filepath.Join(rootBinaryDir, projectSubdir))
 
-	// TODO: Don't specify build type for single config generators
-	if config := viper.GetString("config"); config != "" {
-		cm.Args = append(cm.Args, "-C", config)
+	if api.CMake.Generator.MultiConfig {
+		cm.Args = append(cm.Args, "-C", viper.GetString("config"))
 	}
 
 	cm.Args = append(cm.Args, "--parallel", viper.GetString("parallel"))
 
-	x.Run(cm, verbose)
+	return x.Run(cm, verbose)
 }

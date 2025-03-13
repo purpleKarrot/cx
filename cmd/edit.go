@@ -12,9 +12,13 @@ import (
 var editCmd = &cobra.Command{
 	Use:   "edit",
 	Short: "Open a cache editor",
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		cmake := x.If(viper.GetBool("edit.gui"), "cmake-gui", "ccmake")
-		x.Run(MakeConfigureCmd(cmake), verbose)
+		c, err := MakeConfigureCmd(cmake)
+		if err != nil {
+			return err
+		}
+		return x.Run(c, verbose)
 	},
 }
 

@@ -10,15 +10,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var openCmd = &cobra.Command{
-	Use:   "open",
-	Short: "Open the generated project in the associated application",
-	Run: func(cmd *cobra.Command, args []string) {
-		RequireConfigure(cmd, args)
-		x.Run(exec.Command("cmake", "--open", rootBinaryDir), verbose)
-	},
-}
-
 func init() {
-	rootCmd.AddCommand(openCmd)
+	rootCmd.AddCommand(&cobra.Command{
+		Use:   "open",
+		Short: "Open the generated project in the associated application",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := RequireConfigure(cmd, args); err != nil {
+				return err
+			}
+			return x.Run(exec.Command("cmake", "--open", rootBinaryDir), verbose)
+		},
+	})
 }
