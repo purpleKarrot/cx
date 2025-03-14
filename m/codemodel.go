@@ -3,6 +3,8 @@
 
 package m
 
+import "github.com/purpleKarrot/cx/x"
+
 type CodeModel struct {
 	Configurations []Configuration `json:"configurations"`
 	Kind           string          `json:"kind"`
@@ -53,4 +55,16 @@ type Target struct {
 	DirectoryIndex int    `json:"directoryIndex"`
 	ProjectIndex   int    `json:"projectIndex"`
 	JSONFile       string `json:"jsonFile"`
+}
+
+func (m *CodeModel) FindDirectory(config, source string) *Directory {
+	cfg := x.FindIf(m.Configurations, func(c *Configuration) bool {
+		return c.Name == config
+	})
+	if cfg == nil {
+		return nil
+	}
+	return x.FindIf(cfg.Directories, func(d *Directory) bool {
+		return d.Source == source
+	})
 }

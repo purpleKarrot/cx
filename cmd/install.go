@@ -4,9 +4,11 @@
 package cmd
 
 import (
+	"fmt"
 	"os/exec"
 	"path/filepath"
 
+	"github.com/purpleKarrot/cx/m"
 	"github.com/purpleKarrot/cx/x"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -31,11 +33,41 @@ func init() {
 }
 
 func RunInstall(cmd *cobra.Command, args []string) error {
+	paths, err := m.FindProjectPaths()
+	if err != nil {
+		return err
+	}
+
+	if err := RequireConfigure(cmd, args); err != nil {
+		return err
+	}
+
+	api, err := m.LoadIndex(paths.Binary)
+	if err != nil {
+		return err
+	}
+
+	model, err := api.LoadCodeModel(paths.Binary)
+	if err != nil {
+		return err
+	}
+
+	dir := model.FindDirectory(viper.GetString("config"), paths.Subdir)
+	if dir == nil {
+		fmt.Println("Directory not found")
+		return nil
+	}
+
+	if !dir.HasInstallRule {
+		fmt.Println("Directory does not have an install rule")
+		return nil
+	}
+
 	if err := RunBuild(cmd, args); err != nil {
 		return err
 	}
 
-	cm := exec.Command("cmake", "--install", filepath.Join(rootBinaryDir, projectSubdir))
+	cm := exec.Command("cmake", "--install", filepath.Join(paths.Binary, dir.Build))
 
 	if config := viper.GetString("config"); config != "" {
 		cm.Args = append(cm.Args, "--config", config)

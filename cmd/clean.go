@@ -7,23 +7,25 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/purpleKarrot/cx/m"
 	"github.com/spf13/cobra"
 )
 
-var cleanCmd = &cobra.Command{
-	Use:   "clean",
-	Short: "Delete the existing build directory",
-	RunE:  RunClean,
-}
-
 func init() {
-	rootCmd.AddCommand(cleanCmd)
-}
+	rootCmd.AddCommand(&cobra.Command{
+		Use:   "clean",
+		Short: "Delete the existing build directory",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			paths, err := m.FindProjectPaths()
+			if err != nil {
+				return err
+			}
 
-func RunClean(cmd *cobra.Command, args []string) error {
-	if verbose {
-		fmt.Printf("Cleaning build directory %s\n", rootBinaryDir)
-	}
+			if verbose {
+				fmt.Printf("Cleaning build directory %s\n", paths.Binary)
+			}
 
-	return os.RemoveAll(rootBinaryDir)
+			return os.RemoveAll(paths.Binary)
+		},
+	})
 }

@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
+	"github.com/purpleKarrot/cx/m"
 	"github.com/purpleKarrot/cx/x"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -33,11 +34,12 @@ func init() {
 }
 
 func MakeConfigureCmd(cmake string) (*exec.Cmd, error) {
-	if _, err := os.Stat(filepath.Join(rootBinaryDir, "CMakeCache.txt")); !os.IsNotExist(err) {
-		return exec.Command(cmake, rootBinaryDir), nil
+	paths, err := m.FindProjectPaths()
+	if err != nil {
+		return nil, err
 	}
 
-	api := filepath.Join(rootBinaryDir, ".cmake", "api", "v1", "query", "client-cx")
+	api := filepath.Join(paths.Binary, ".cmake", "api", "v1", "query", "client-cx")
 	if err := os.MkdirAll(api, 0755); err != nil {
 		return nil, fmt.Errorf("Failed to create directory %s: %v", api, err)
 	}
@@ -45,8 +47,8 @@ func MakeConfigureCmd(cmake string) (*exec.Cmd, error) {
 	file, _ := os.Create(filepath.Join(api, "codemodel-v2"))
 	file.Close()
 
-	cmd := exec.Command(cmake, rootSourceDir)
-	cmd.Dir = rootBinaryDir
+	cmd := exec.Command(cmake, paths.Source)
+	cmd.Dir = paths.Binary
 
 	generator := viper.GetString("generator")
 	if generator != "" {
@@ -85,11 +87,16 @@ func RunConfigure(cmd *cobra.Command, args []string) error {
 }
 
 func RequireConfigure(cmd *cobra.Command, args []string) error {
+	paths, err := m.FindProjectPaths()
+	if err != nil {
+		return err
+	}
+
 	needed := func() bool {
 		if fresh, _ := cmd.Flags().GetBool("fresh"); fresh {
 			return true
 		}
-		if _, err := os.Stat(filepath.Join(rootBinaryDir, "CMakeCache.txt")); os.IsNotExist(err) {
+		if _, err := os.Stat(filepath.Join(paths.Binary, "CMakeCache.txt")); os.IsNotExist(err) {
 			return true
 		}
 		return false

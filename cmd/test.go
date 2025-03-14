@@ -4,6 +4,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os/exec"
 	"path/filepath"
 
@@ -24,16 +25,36 @@ func init() {
 }
 
 func RunTest(cmd *cobra.Command, args []string) error {
-	api, err := m.LoadIndex(rootBinaryDir)
+	paths, err := m.FindProjectPaths()
 	if err != nil {
 		return err
+	}
+
+	if err := RequireConfigure(cmd, args); err != nil {
+		return err
+	}
+
+	api, err := m.LoadIndex(paths.Binary)
+	if err != nil {
+		return err
+	}
+
+	model, err := api.LoadCodeModel(paths.Binary)
+	if err != nil {
+		return err
+	}
+
+	dir := model.FindDirectory(viper.GetString("config"), paths.Subdir)
+	if dir == nil {
+		fmt.Println("Directory not found")
+		return nil
 	}
 
 	if err := RunBuild(cmd, args); err != nil {
 		return err
 	}
 
-	cm := exec.Command("ctest", "--test-dir", filepath.Join(rootBinaryDir, projectSubdir))
+	cm := exec.Command("ctest", "--test-dir", filepath.Join(paths.Binary, dir.Build))
 
 	if api.CMake.Generator.MultiConfig {
 		cm.Args = append(cm.Args, "-C", viper.GetString("config"))

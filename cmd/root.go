@@ -4,9 +4,6 @@
 package cmd
 
 import (
-	"crypto/md5"
-	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -16,12 +13,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-var (
-	verbose       bool
-	rootSourceDir string
-	rootBinaryDir string
-	projectSubdir string
-)
+var verbose bool
 
 var rootCmd = &cobra.Command{
 	Use:   "cx",
@@ -35,7 +27,7 @@ func Execute() {
 }
 
 func init() {
-	cobra.OnInitialize(initProjectRoot, initConfig)
+	cobra.OnInitialize(initConfig)
 
 	flags := rootCmd.PersistentFlags()
 	flags.BoolVarP(&verbose, "verbose", "v", false, "enable verbose output")
@@ -49,49 +41,10 @@ func init() {
 	viper.BindPFlag("parallel", flags.Lookup("parallel"))
 }
 
-func initProjectRoot() {
-	startDir, err := os.Getwd()
-	if err != nil {
-		log.Fatalf("Failed to get current working directory: %v", err)
-	}
-
-	rootSourceDir, err = findProjectRoot(startDir)
-	if err != nil {
-		log.Fatalf("Failed to find project root: %v", err)
-	}
-
-	hash := fmt.Sprintf("%x", md5.Sum([]byte(rootSourceDir)))
-	rootBinaryDir = filepath.Join(xdg.CacheHome, "cx", hash)
-
-	projectSubdir, err = filepath.Rel(rootSourceDir, startDir)
-	if err != nil {
-		log.Fatalf("Failed to calculate subdir: %v", err)
-	}
-}
-
 func initConfig() {
 	viper.AddConfigPath(filepath.Join(xdg.ConfigHome, "cx"))
 	viper.SetConfigName("config")
 
 	viper.AutomaticEnv()
 	viper.ReadInConfig()
-}
-
-func findProjectRoot(startDir string) (string, error) {
-	var rootDir string
-	dir := startDir
-	for {
-		if _, err := os.Stat(filepath.Join(dir, "CMakeLists.txt")); err == nil {
-			rootDir = dir
-		}
-		parentDir := filepath.Dir(dir)
-		if parentDir == dir {
-			break
-		}
-		dir = parentDir
-	}
-	if rootDir == "" {
-		return "", fmt.Errorf("CMakeLists.txt not found")
-	}
-	return rootDir, nil
 }

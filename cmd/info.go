@@ -22,12 +22,17 @@ func init() {
 		Use:   "info",
 		Short: "Print information about the generated project",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			api, err := m.LoadIndex(rootBinaryDir)
+			paths, err := m.FindProjectPaths()
+			if err != nil {
+				return err
+			}
+
+			api, err := m.LoadIndex(paths.Binary)
 			return json.NewEncoder(os.Stdout).Encode(&Info{
 				CMake: x.If(err == nil, &api.CMake, nil),
 				Paths: &m.Paths{
-					Source: rootSourceDir,
-					Build:  rootBinaryDir,
+					Source: paths.Source,
+					Build:  paths.Binary,
 				},
 			})
 		},
