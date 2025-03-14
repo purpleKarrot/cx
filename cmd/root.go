@@ -43,6 +43,8 @@ func init() {
 	flags.String("config", "Debug", "Specify the build configuration")
 	viper.BindPFlag("config", flags.Lookup("config"))
 
+	flags.Bool("fresh", false, "Configure a fresh build tree, removing any existing cache file.")
+
 	flags.IntP("parallel", "j", runtime.NumCPU(), "Specify the number of parallel jobs")
 	viper.BindPFlag("parallel", flags.Lookup("parallel"))
 }

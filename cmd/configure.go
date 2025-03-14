@@ -76,11 +76,25 @@ func RunConfigure(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+
+	if fresh, _ := cmd.Flags().GetBool("fresh"); fresh {
+		c.Args = append(c.Args, "--fresh")
+	}
+
 	return x.Run(c, verbose)
 }
 
 func RequireConfigure(cmd *cobra.Command, args []string) error {
-	if _, err := os.Stat(filepath.Join(rootBinaryDir, "CMakeCache.txt")); os.IsNotExist(err) {
+	needed := func() bool {
+		if fresh, _ := cmd.Flags().GetBool("fresh"); fresh {
+			return true
+		}
+		if _, err := os.Stat(filepath.Join(rootBinaryDir, "CMakeCache.txt")); os.IsNotExist(err) {
+			return true
+		}
+		return false
+	}
+	if needed() {
 		return RunConfigure(cmd, args)
 	}
 	return nil
