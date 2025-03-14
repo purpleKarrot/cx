@@ -16,3 +16,33 @@ A unified front end for the CMake ecosystem.
 
 Options are still limited. Contributions are welcome.
 
+## Installation
+
+To install cx, run the following command:
+
+```sh
+go install github.com/purpleKarrot/cx@latest
+```
+
+Configure your shell to use cx completion:
+
+```sh
+# bash
+source <(cx completion bash)
+
+# fish
+cx completion fish | source
+
+# powershell
+cx completion powershell | Out-String | Invoke-Expression
+
+# zsh
+source <(cx completion zsh)
+```
+
+Create a configuration file to `$XDG_CONFIG_HOME/cx/config.yaml`:
+
+``` yaml
+generator: Ninja Multi-Config
+config: Release
+```
