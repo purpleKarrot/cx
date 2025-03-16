@@ -8,7 +8,6 @@ import (
 	"os"
 
 	"github.com/purpleKarrot/cx/m"
-	"github.com/purpleKarrot/cx/x"
 	"github.com/spf13/cobra"
 )
 
@@ -29,7 +28,12 @@ func init() {
 
 			api, err := m.LoadIndex(paths.Binary)
 			return json.NewEncoder(os.Stdout).Encode(&Info{
-				CMake: x.If(err == nil, &api.CMake, nil),
+				CMake: func() *m.CMake {
+					if err == nil {
+						return &api.CMake
+					}
+					return nil
+				}(),
 				Paths: &m.Paths{
 					Source: paths.Source,
 					Build:  paths.Binary,
