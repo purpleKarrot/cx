@@ -8,8 +8,12 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
+	"strings"
 
 	"github.com/adrg/xdg"
+	"github.com/purpleKarrot/cx/x"
+	"github.com/spf13/viper"
 )
 
 type ProjectPaths struct {
@@ -41,8 +45,18 @@ func FindProjectPaths() (*ProjectPaths, error) {
 }
 
 func findProjectRoot(startDir string) (string, error) {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
 	var rootDir string
 	dir := startDir
+	workspace := x.Map(viper.GetStringSlice("workspace"), func(s string) string {
+		if strings.HasPrefix(s, "~/") {
+			s = filepath.Join(homeDir, s[1:])
+		}
+		return filepath.Clean(s)
+	})
 	for {
 		if _, err := os.Stat(filepath.Join(dir, "CMakeLists.txt")); err == nil {
 			rootDir = dir
@@ -52,6 +66,9 @@ func findProjectRoot(startDir string) (string, error) {
 			break
 		}
 		dir = parentDir
+		if slices.Contains(workspace, dir) {
+			break
+		}
 	}
 	if rootDir == "" {
 		return "", fmt.Errorf("CMakeLists.txt not found")
